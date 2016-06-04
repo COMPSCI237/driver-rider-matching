@@ -1,25 +1,65 @@
-
 description = 'samza'
-dependencies {
-  compile project(':common')
-    compile group: 'org.apache.samza', name: 'samza-api', version:'0.9.0'
-    compile group: 'org.apache.samza', name: 'samza-core_2.10', version:'0.9.0'
-    compile group: 'org.apache.samza', name: 'samza-log4j', version:'0.9.0'
-    compile group: 'org.apache.samza', name: 'samza-shell', version:'0.9.0', classifier:'dist'
-    compile group: 'org.apache.samza', name: 'samza-yarn_2.10', version:'0.9.0'
-    compile group: 'org.apache.samza', name: 'samza-kv_2.10', version:'0.9.0'
-    compile group: 'org.apache.samza', name: 'samza-kv-rocksdb_2.10', version:'0.9.0'
-    compile group: 'org.apache.samza', name: 'samza-kafka_2.10', version:'0.9.0'
-    compile group: 'org.apache.kafka', name: 'kafka_2.10', version:'0.8.2.1'
-    compile group: 'org.schwering', name: 'irclib', version:'1.10'
-    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.6.2'
-    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.6.2'
-    compile group: 'org.codehaus.jackson', name: 'jackson-jaxrs', version:'1.8.5'
-    compile group: 'org.apache.hadoop', name: 'hadoop-annotations', version:'2.6.1'
-    compile group: 'org.apache.hadoop', name: 'hadoop-auth', version:'2.6.1'
-    compile group: 'org.apache.hadoop', name: 'hadoop-common', version:'2.6.1'
-    compile group: 'org.apache.hadoop', name: 'hadoop-hdfs', version:'2.6.1'
-    compile group: 'org.apache.hadoop', name: 'hadoop-yarn-api', version:'2.6.1'
-    compile group: 'org.apache.hadoop', name: 'hadoop-yarn-client', version:'2.6.1'
-    compile group: 'org.apache.hadoop', name: 'hadoop-yarn-common', version:'2.6.1'
+
+defaultTasks 'distTar'
+
+configurations {
+    explode
 }
+
+dependencies {
+    compile project(':common')
+    compile(group: 'org.codehaus.jackson', name: 'jackson-jaxrs', version: '1.8.5')
+    compile(group: 'org.slf4j', name: 'slf4j-api', version: "$SLF4J_VERSION")
+    compile(group: 'org.slf4j', name: 'slf4j-log4j12', version: "$SLF4J_VERSION")
+    compile(group: 'org.schwering', name: 'irclib', version: '1.10')
+    compile(group: 'org.apache.samza', name: 'samza-api', version: "$SAMZA_VERSION")
+    compile(group: 'org.apache.samza', name: 'samza-kv_2.10', version: "$SAMZA_VERSION")
+
+    explode(group: 'org.apache.samza', name: 'samza-shell', ext: 'tgz', classifier: 'dist', version: "$SAMZA_VERSION")
+
+    runtime(group: 'org.apache.samza', name: 'samza-core_2.10', version: "$SAMZA_VERSION")
+    runtime(group: 'org.apache.samza', name: 'samza-log4j', version: "$SAMZA_VERSION")
+    runtime(group: 'org.apache.samza', name: 'samza-shell', version: "$SAMZA_VERSION")
+    runtime(group: 'org.apache.samza', name: 'samza-yarn_2.10', version: "$SAMZA_VERSION")
+    runtime(group: 'org.apache.samza', name: 'samza-kv-rocksdb_2.10', version: "$SAMZA_VERSION")
+    runtime(group: 'org.apache.samza', name: 'samza-kafka_2.10', version: "$SAMZA_VERSION")
+    runtime(group: 'org.apache.kafka', name: 'kafka_2.10', version: "$KAFKA_VERSION")
+    runtime(group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: "$HADOOP_VERSION")
+
+}
+
+ext {
+    tarDir = new File(project.buildDir, 'distributions')
+}
+
+task distTar(dependsOn: build, type: Tar) {
+    destinationDir(tarDir)
+    compression(Compression.GZIP)
+    classifier('dist')
+    extension('tar.gz')
+
+    into("config") {
+        from "src/main/config"
+        filter { String line ->
+            line.replaceAll('[\$][{]basedir[}]', project.projectDir.toString()).replaceAll('[\$][{]project.artifactId[}]', project.name.toString()).replaceAll('/target/', '/build/distributions/').replaceAll('[\$][{]pom.version[}]', version)
+        }
+    }
+    into("bin") {
+        from {
+            configurations.explode.collect { tarTree(it) }
+        }
+    }
+    into("lib") {
+        from configurations.runtime
+        from configurations.runtime.artifacts.files
+        from("src/main/resources/") {
+            include "log4j.xml"
+        }
+    }
+}
+
+task deploy(dependsOn: [distTar], type: Sync) {
+    into(new File(rootProject.projectDir, "/deploy/samza"))
+    from(tarTree("$tarDir/$project.name-$version-dist.tar.gz"))
+}
+

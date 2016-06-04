@@ -1,6 +1,4 @@
 allprojects {
-    apply plugin: 'maven'
-
     group = 'edu.zhangfan.uci'
     version = '1.0-SNAPSHOT'
 }
@@ -10,22 +8,17 @@ subprojects {
     sourceCompatibility = 1.8
     targetCompatibility = 1.8
 
-
     repositories {
         mavenLocal()
         maven { url "http://repo.maven.apache.org/maven2" }
     }
-
 
     dependencies {
         compile group: 'com.google.code.gson', name: 'gson', version: '2.2.4'
         compile group: 'com.google.guava', name: 'guava', version: '19.0'
         testCompile group: 'junit', name: 'junit', version: '4.12'
     }
-
-
 }
-
 
 // install everything
 task installGrid(type: Exec) {
@@ -38,14 +31,7 @@ task installGrid(type: Exec) {
     }
 }
 
-// update the Samza job
-task deployHelloSamza(dependsOn: [installGrid], type: Sync) {
-    into(new File(project.projectDir, "/deploy/samza"))
-    from(tarTree('samza/target/samza-1.0-SNAPSHOT-dist.tar.gz'))
-}
-
-// run everything
-task startGrid(type: Exec) {
+task startGrid(dependsOn: installGrid, type: Exec) {
     workingDir(project.projectDir)
     commandLine("bin/grid", "start", "all")
     outputs.upToDateWhen {
@@ -56,21 +42,13 @@ task startGrid(type: Exec) {
     }
 }
 
-// stop everything
-task stopGrid(type: Exec) {
+task stopGrid(dependsOn: installGrid, type: Exec) {
     workingDir(project.projectDir)
     commandLine("bin/grid", "stop", "all")
 }
 
-//
-// Samza helpers
-//
-
-
-// helper task to run Samza jobs
 class SamzaTask extends DefaultTask {
     String configFile;
-
     @TaskAction
     def startSamza() {
         project.exec {
@@ -82,17 +60,11 @@ class SamzaTask extends DefaultTask {
     }
 }
 
-// helper to run the Samza job to retrieve Wikipedia data
-task runDriverMatch(dependsOn: [startGrid, deployHelloSamza], type: SamzaTask) {
+task runDriverMatch(dependsOn: [startGrid, 'samza:deploy'], type: SamzaTask) {
     configFile("driverMatchTask.properties")
 }
 
-//
-// Kafka helpers
-//
-
-// show all Kafka topics
-task listKafkaTopics(type: Exec) {
+task listKafkaTopics(dependsOn: startGrid, type: Exec) {
     workingDir(project.projectDir)
     commandLine("deploy/kafka/bin/kafka-topics.sh",
             "--zookeeper", "localhost:2181",
@@ -119,12 +91,6 @@ task dumpWikiRaw(dependsOn: startGrid, type: KafkaDumpTask) {
     topic("wikipedia-raw")
 }
 
-// helper to dump the wikipedia-edits topic
-task dumpWikiEdits(dependsOn: startGrid, type: KafkaDumpTask) {
-    topic("wikipedia-edits")
-}
 
-// helper to dump the wikipedia-stats topic
-task dumpWikiStats(dependsOn: startGrid, type: KafkaDumpTask) {
-    topic("wikipedia-stats")
-}
+
+
