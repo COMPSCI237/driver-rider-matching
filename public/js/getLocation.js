@@ -238,7 +238,7 @@ $(document).ready(function(){
 });
 
 // insert google map to display rider and driver location
-function initialize() {
+function initMap() {
   map = new google.maps.Map(document.getElementById('googleMap'), {
     zoom: 11,
     center: UCILocation,

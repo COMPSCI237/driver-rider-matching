@@ -19,7 +19,7 @@ router.get('/drive', passportConfig.isAuthenticated, function(req, res) {
 /******************************************************************************/
 // Kafka Proxy, uncomment this section when testing kafka
 // When using Samza as backend, make changes on message topic and other routes
-
+/*
 var kafka = require('kafka-node');
 var HighLevelProducer = kafka.HighLevelProducer;
 var Client = kafka.Client;
@@ -86,10 +86,10 @@ producer.on('ready', function () {
       });
     });
 });
-
+/*
 /******************************************************************************/
 
-/*
+
 router.post('/ride', function(req, res, next) {
   util.log("Rider " + req.user.profile.name + " requested a ride");
   async.waterfall([
@@ -152,6 +152,6 @@ router.post('/drive', passportConfig.isAuthenticated, function(req, res, next) {
     util.log("    " + req.body.district);
   });
 });
-*/
+
 
 module.exports = router;

@@ -12,12 +12,12 @@ const flash = require('express-flash');
 const MongoStore = require('connect-mongo/es5')(session);
 const passport = require('passport');
 const util = require('util');
+const https = require('https');
+const fs = require('fs');
+
 var config = require('./config');
-
-var port = process.env.PORT || 3000;
-
+var port = process.env.PORT || 443;
 var User = require('./models/user.js');
-
 var app = express();
 
 // connect to MongoDB
@@ -78,7 +78,7 @@ app.use(matchRoutes);
 /******************************************************************************/
 // Kafka Proxy, uncomment this section when testing kafka
 // When using Samza as backend, make changes on message topic and other logic
-
+/*
 var kafka = require('kafka-node');
 var HighLevelConsumer = kafka.HighLevelConsumer;
 var Client = kafka.Client;
@@ -111,7 +111,7 @@ exports.queryMatching = (riderId) => {
   }
   return result;
 }
-
+*/
 /******************************************************************************/
 
 
@@ -122,7 +122,14 @@ const performanceTest = require("./test/performanceTest");
 
 //performanceTest.testBatchPerf(100, 0.8);
 
-app.listen(port, function(err) {
+
+const options = {
+  key: fs.readFileSync('key.pem'),
+  cert: fs.readFileSync('cert.pem'),
+  passphrase: 'asdf1234'
+};
+
+https.createServer(options, app).listen(port, function(err) {
   if (err) throw err;
   console.log("Server is Running on port " + port);
 });
