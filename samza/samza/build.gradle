@@ -23,7 +23,7 @@ dependencies {
     runtime(group: 'org.apache.samza', name: 'samza-yarn_2.10', version: "$SAMZA_VERSION")
     runtime(group: 'org.apache.samza', name: 'samza-kv-rocksdb_2.10', version: "$SAMZA_VERSION")
     runtime(group: 'org.apache.samza', name: 'samza-kafka_2.10', version: "$SAMZA_VERSION")
-    runtime(group: 'org.apache.kafka', name: 'kafka_2.10', version: "$KAFKA_VERSION")
+    runtime(group: 'org.apache.kafka', name: 'kafka_2.10', version: '0.8.2.1')
     runtime(group: 'org.apache.hadoop', name: 'hadoop-hdfs', version: "$HADOOP_VERSION")
 
 }

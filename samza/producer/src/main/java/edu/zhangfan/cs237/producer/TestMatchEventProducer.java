@@ -11,27 +11,36 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class TestMatchEventProducer {
+public class TestMatchEventProducer implements IProducer {
 
-  public static void main(String[] args) throws IOException {
-    Producer<String, String> producer;
+  private static final Gson gson = new Gson();
+
+  private Producer<String, String> producer;
+  private int messageCount;
+
+  public TestMatchEventProducer(int messageCount) {
     try (InputStream in = Resources.getResource("producer.properties").openStream()) {
       Properties properties = new Properties();
       properties.load(in);
-      producer = new KafkaProducer<>(properties);
+      this.producer = new KafkaProducer<>(properties);
+    } catch (IOException e) {
+      System.out.print("error");
     }
-
-    Gson gson = new Gson();
-    try {
-      for (int i = 0; i < 10; i++) {
-        // produce one match for every block.
-        MatchEvent match = new MatchEvent(Integer.toString(i), Integer.toString(i));
-        producer.send(new ProducerRecord<>("match-stream", Integer.toString(i), gson.toJson(match)));
-      }
-    } catch (Throwable throwable) {
-      System.out.println("error");
-    } finally {
-      producer.close();
-    }
+    this.messageCount = messageCount;
   }
+
+  public void activate() {
+    for (int i = 0; i < messageCount; i++) {
+      // produce one match for every block.
+      MatchEvent match = new MatchEvent(Integer.toString(i), Integer.toString(i));
+      producer.send(new ProducerRecord<>("match-stream", Integer.toString(i), gson.toJson(match)));
+    }
+    producer.close();
+  }
+
+  public static void main(String[] args) throws IOException {
+    TestMatchEventProducer producer = new TestMatchEventProducer(10000);
+    producer.activate();
+  }
+
 }

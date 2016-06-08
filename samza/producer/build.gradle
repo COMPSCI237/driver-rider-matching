@@ -1,12 +1,22 @@
-
 description = 'provider'
 dependencies {
   compile project(':common')
-    compile group: 'org.apache.kafka', name: 'kafka-clients', version: "$KAFKA_VERSION"
-    compile group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.21'
+  compile group: 'org.apache.kafka', name: 'kafka-clients', version: "$KAFKA_VERSION"
+  compile group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.21'
 }
 
 task runProducer(dependsOn: [build], type: JavaExec) {
   classpath sourceSets.main.runtimeClasspath
   main 'edu.zhangfan.cs237.producer.SampleProducer'
 }
+
+task runMatchStreamProducer(dependsOn: [build], type: JavaExec) {
+  classpath sourceSets.main.runtimeClasspath
+  main 'edu.zhangfan.cs237.producer.TestMatchEventProducer'
+}
+
+task runPerformanceTest(dependsOn: [build], type: JavaExec) {
+  classpath sourceSets.main.runtimeClasspath
+  main 'edu.zhangfan.cs237.producer.PerformanceTestDriver'
+}
+

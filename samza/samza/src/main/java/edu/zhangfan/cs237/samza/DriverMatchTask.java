@@ -65,12 +65,12 @@ public class DriverMatchTask implements StreamTask, InitableTask {
     String message = (String) envelope.getMessage();
     System.out.println(topic);
     switch (topic) {
-      case "driver-locations":
+      case StreamName.DRIVER_LOCATIONS:
         DriverLocationEvent driverLocationEvent = gson.fromJson(message, DriverLocationEvent.class);
         freeDriverLocationStore.put(driverLocationEvent.getDriverId(),
             new Location(driverLocationEvent.getLongitude(), driverLocationEvent.getLatitude()).toString());
         break;
-      case "events":
+      case StreamName.EVENTS:
         Event event = gson.fromJson(message, Event.class);
         switch (event.getType()) {
           case RIDE_REQUEST:
