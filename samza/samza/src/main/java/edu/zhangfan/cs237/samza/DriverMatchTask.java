@@ -11,32 +11,16 @@ import org.apache.samza.system.OutgoingMessageEnvelope;
 import org.apache.samza.task.*;
 
 class Location {
-  private int longitude;
-  private int latitude;
+  private double longitude;
+  private double latitude;
 
-  Location(int longitude, int latitude) {
+  Location(double longitude, double latitude) {
     this.longitude = longitude;
-    this.latitude = latitude;
-  }
-
-  public int getLongitude() {
-    return longitude;
-  }
-
-  public void setLongitude(int longitude) {
-    this.longitude = longitude;
-  }
-
-  public int getLatitude() {
-    return latitude;
-  }
-
-  public void setLatitude(int latitude) {
     this.latitude = latitude;
   }
 
   public double distanceTo(Location loc) {
-    return Math.sqrt(Math.pow((this.latitude - loc.latitude), 2) + Math.pow((this.longitude - loc.latitude), 2));
+    return Math.sqrt(Math.pow((this.latitude - loc.latitude), 2.) + Math.pow((this.longitude - loc.latitude), 2.));
   }
 
   @Override
@@ -48,10 +32,10 @@ class Location {
 
 public class DriverMatchTask implements StreamTask, InitableTask {
   private KeyValueStore<String, String> freeDriverLocationStore;
-  //  private KeyValueStore<Integer, String> driverListStore;
   private Gson gson;
 
   @Override
+  @SuppressWarnings("unchecked")
   public void init(Config config, TaskContext context) throws Exception {
     this.freeDriverLocationStore = (KeyValueStore<String, String>) context.getStore("location");
     this.gson = new Gson();
@@ -63,12 +47,12 @@ public class DriverMatchTask implements StreamTask, InitableTask {
 
     String topic = envelope.getSystemStreamPartition().getStream();
     String message = (String) envelope.getMessage();
-    System.out.println(topic);
     switch (topic) {
       case StreamName.DRIVER_LOCATIONS:
         DriverLocationEvent driverLocationEvent = gson.fromJson(message, DriverLocationEvent.class);
         freeDriverLocationStore.put(driverLocationEvent.getDriverId(),
             new Location(driverLocationEvent.getLongitude(), driverLocationEvent.getLatitude()).toString());
+//        System.out.printf("Driver location updated, %d \n", System.currentTimeMillis());
         break;
       case StreamName.EVENTS:
         Event event = gson.fromJson(message, Event.class);
@@ -86,7 +70,6 @@ public class DriverMatchTask implements StreamTask, InitableTask {
               }
             }
             if (closetDriverId != null) {
-              System.out.println("Match succeed");
               MatchEvent matchEvent = new MatchEvent(event.getIdentifier(), closetDriverId);
               // TODO output stream ID.
               messageCollector.send(

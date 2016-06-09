@@ -5,12 +5,12 @@ public class Event {
 
   private Integer blockId;
   private String identifier;
-  private Integer longitude;
-  private Integer latitude;
+  private double longitude;
+  private double latitude;
   private Status status;
   private Type type;
 
-  public Event(Integer blockId, String identifier, Integer longitude, Integer latitude, Status status, Type type) {
+  public Event(Integer blockId, String identifier, double longitude, double latitude, Status status, Type type) {
     this.blockId = blockId;
     this.identifier = identifier;
     this.longitude = longitude;
@@ -35,19 +35,19 @@ public class Event {
     this.identifier = identifier;
   }
 
-  public Integer getLongitude() {
+  public double getLongitude() {
     return longitude;
   }
 
-  public void setLongitude(Integer longitude) {
+  public void setLongitude(double longitude) {
     this.longitude = longitude;
   }
 
-  public Integer getLatitude() {
+  public double getLatitude() {
     return latitude;
   }
 
-  public void setLatitude(Integer latitude) {
+  public void setLatitude(double latitude) {
     this.latitude = latitude;
   }
 

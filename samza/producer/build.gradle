@@ -3,16 +3,17 @@ dependencies {
   compile project(':common')
   compile group: 'org.apache.kafka', name: 'kafka-clients', version: "$KAFKA_VERSION"
   compile group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.21'
+  compile group: 'org.apache.commons', name: 'commons-csv', version: '1.4'
 }
 
 task runProducer(dependsOn: [build], type: JavaExec) {
   classpath sourceSets.main.runtimeClasspath
-  main 'edu.zhangfan.cs237.producer.SampleProducer'
+  main 'edu.zhangfan.cs237.producer.SampleTestProducer'
 }
 
 task runMatchStreamProducer(dependsOn: [build], type: JavaExec) {
   classpath sourceSets.main.runtimeClasspath
-  main 'edu.zhangfan.cs237.producer.TestMatchEventProducer'
+  main 'edu.zhangfan.cs237.producer.TestMatchEventTestProducer'
 }
 
 task runPerformanceTest(dependsOn: [build], type: JavaExec) {
@@ -20,3 +21,9 @@ task runPerformanceTest(dependsOn: [build], type: JavaExec) {
   main 'edu.zhangfan.cs237.producer.PerformanceTestDriver'
 }
 
+task clearKafka(type: Exec) {
+
+  commandLine 'deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic events'
+  commandLine 'deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic match-stream'
+  commandLine 'deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic driver-locations'
+}

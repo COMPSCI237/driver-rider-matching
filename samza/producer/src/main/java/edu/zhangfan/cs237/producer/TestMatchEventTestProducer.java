@@ -11,14 +11,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-public class TestMatchEventProducer implements IProducer {
+public class TestMatchEventTestProducer implements ITestProducer {
 
   private static final Gson gson = new Gson();
 
   private Producer<String, String> producer;
   private int messageCount;
 
-  public TestMatchEventProducer(int messageCount) {
+  public TestMatchEventTestProducer(int messageCount) {
     try (InputStream in = Resources.getResource("producer.properties").openStream()) {
       Properties properties = new Properties();
       properties.load(in);
@@ -29,17 +29,20 @@ public class TestMatchEventProducer implements IProducer {
     this.messageCount = messageCount;
   }
 
-  public void activate() {
+  public void initiate() {  }
+
+  public long activate() {
     for (int i = 0; i < messageCount; i++) {
       // produce one match for every block.
       MatchEvent match = new MatchEvent(Integer.toString(i), Integer.toString(i));
       producer.send(new ProducerRecord<>("match-stream", Integer.toString(i), gson.toJson(match)));
     }
     producer.close();
+    return messageCount;
   }
 
   public static void main(String[] args) throws IOException {
-    TestMatchEventProducer producer = new TestMatchEventProducer(10000);
+    TestMatchEventTestProducer producer = new TestMatchEventTestProducer(10000);
     producer.activate();
   }
 

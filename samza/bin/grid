@@ -153,9 +153,7 @@ start_yarn() {
 start_kafka() {
   if [ -f $DEPLOY_ROOT_DIR/$SYSTEM/bin/kafka-server-start.sh ]; then
     mkdir -p $DEPLOY_ROOT_DIR/$SYSTEM/logs
-    cd $DEPLOY_ROOT_DIR/$SYSTEM
-    nohup bin/kafka-server-start.sh config/server.properties > logs/kafka.log 2>&1 &
-    cd - > /dev/null
+    nohup deploy/kafka/bin/kafka-server-start.sh conf/kafka/server.properties > deploy/kafka/logs/kafka.log 2>&1 &
     wait_for_service "kafka" $KAFKA_PORT
   else
     echo 'Kafka is not installed. Run: bin/grid install kafka'
