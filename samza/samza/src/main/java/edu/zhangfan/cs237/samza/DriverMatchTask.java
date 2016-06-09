@@ -52,7 +52,7 @@ public class DriverMatchTask implements StreamTask, InitableTask {
         DriverLocationEvent driverLocationEvent = gson.fromJson(message, DriverLocationEvent.class);
         freeDriverLocationStore.put(driverLocationEvent.getDriverId(),
             new Location(driverLocationEvent.getLongitude(), driverLocationEvent.getLatitude()).toString());
-//        System.out.printf("Driver location updated, %d \n", System.currentTimeMillis());
+        System.out.printf("%d \n", System.currentTimeMillis());
         break;
       case StreamName.EVENTS:
         Event event = gson.fromJson(message, Event.class);
