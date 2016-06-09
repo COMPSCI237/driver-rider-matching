@@ -21,30 +21,37 @@ public class PerformanceTestDriver {
     long messageNum = 10000;
 //    ITestProducer producer = new TestMatchEventTestProducer(consumedExpect);
     SampleTestProducer producer = new SampleTestProducer(messageNum, .8);
-    PrintWriter writer = new PrintWriter("log.csv");
+    Long testTimestamp = System.currentTimeMillis();
+    PrintWriter latencyWriter = new PrintWriter(String.format("latency-%d.csv", testTimestamp));
+    latencyWriter.println("riderID, request, matched");
+    PrintWriter throughputWriter = new PrintWriter(String.format("throughput-%d.csv", testTimestamp));
+    throughputWriter.println("elapsed, matched");
+
     producer.initiate();
     System.out.printf("Before producer activated: %d\n", System.currentTimeMillis());
     long expect = producer.activate();
     long activatedTimeStamp = System.currentTimeMillis();
     System.out.printf("After producer activated: %d\n", activatedTimeStamp);
 
-    Map<String, Long> timestamp = producer.getTimestamp();
+    Map<String, Long> timestamp = producer.getRideRequestTimestamp();
+    System.out.printf("Expect %d matches\n", expect);
     while (consumedCounter < expect) {
-      ConsumerRecords<String, String> records = consumer.poll(50);
+      ConsumerRecords<String, String> records = consumer.poll(500);
       for (ConsumerRecord<String, String> record : records) {
         MatchEvent event = gson.fromJson(record.value(), MatchEvent.class);
         String riderID = event.getRiderId();
-        writer.printf("%s, %s, %d \n", riderID, timestamp.get(riderID), System.currentTimeMillis());
-        System.out.printf("%s, %s, %d \n", riderID, timestamp.get(riderID), System.currentTimeMillis());
+        latencyWriter.printf("%s, %s, %d \n", riderID, timestamp.get(riderID), System.currentTimeMillis());
       }
       consumedCounter += records.count();
+      System.out.printf("Matched %d\n", consumedCounter);
+      throughputWriter.printf("%d, %d\n", System.currentTimeMillis() - activatedTimeStamp, consumedCounter);
     }
-    System.out.printf("Expect consumed: %d \n", expect);
     long consumedTimeStamp = System.currentTimeMillis();
     System.out.printf("After consumer consumed all messages: %d\n", consumedTimeStamp);
     System.out.printf("Total time %d (ms)\n", consumedTimeStamp - activatedTimeStamp);
     consumer.close();
-    writer.close();
+    latencyWriter.close();
+    throughputWriter.close();
   }
 
 
@@ -60,7 +67,7 @@ public class PerformanceTestDriver {
     KafkaConsumer<String, String> consumer = new KafkaConsumer<>(props);
     consumer.subscribe(Collections.singletonList(StreamName.MATCH));
     consumer.seekToEnd();
-    consumer.poll(0);
+    consumer.poll(1);
     return consumer;
   }
 }

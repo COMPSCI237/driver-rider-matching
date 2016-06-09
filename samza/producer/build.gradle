@@ -22,6 +22,7 @@ task runPerformanceTest(dependsOn: [build], type: JavaExec) {
 }
 
 task clearKafka(type: Exec) {
+  workingDir rootProject.rootDir
 
   commandLine 'deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic events'
   commandLine 'deploy/kafka/bin/kafka-topics.sh --zookeeper localhost:2181 --delete --topic match-stream'

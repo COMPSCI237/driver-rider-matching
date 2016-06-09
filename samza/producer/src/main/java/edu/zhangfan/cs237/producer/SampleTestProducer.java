@@ -27,12 +27,12 @@ public class SampleTestProducer implements ITestProducer {
   private final double ratio;
   private final long messageCount;
 
-  private Map<String, Long> timestamp;
+  private Map<String, Long> rideRequestTimestamp;
 
   public SampleTestProducer(long messageCount, double ratio) {
     this.messageCount = messageCount;
     this.ratio = ratio;
-    this.timestamp = new HashMap<String, Long>();
+    this.rideRequestTimestamp = new HashMap<String, Long>();
 
     Properties properties = new Properties();
     try (InputStream in = Resources.getResource("producer.properties").openStream()) {
@@ -46,7 +46,7 @@ public class SampleTestProducer implements ITestProducer {
   public void initiate() {
     // Initialize: $INIT_DRIVER_NUM driver to the block
     for (int i = 0; i < INIT_DRIVER_NUM; ++i) {
-      DriverLocationEvent location = new DriverLocationEvent(1, Integer.toString(i), 1., 2., Type.DRIVER_LOCATION);
+      DriverLocationEvent location = new DriverLocationEvent(BLOCK_ID, Integer.toString(i), 1., 2., Type.DRIVER_LOCATION);
       producer.send(new ProducerRecord<>(StreamName.DRIVER_LOCATIONS, Integer.toString(location.getBlockId()), gson.toJson(location)));
     }
   }
@@ -64,15 +64,15 @@ public class SampleTestProducer implements ITestProducer {
         Event event = new Event(BLOCK_ID, riderID, 1., 2., null, Type.RIDE_REQUEST);
         producer.send(new ProducerRecord<>(StreamName.EVENTS, Integer.toString(event.getBlockId()), gson.toJson(event)));
         rideRequestCounter += 1;
-        this.timestamp.put(riderID, System.currentTimeMillis());
+        this.rideRequestTimestamp.put(riderID, System.currentTimeMillis());
       }
     }
     producer.close();
     return rideRequestCounter;
   }
 
-  public Map<String, Long> getTimestamp() {
-    return this.timestamp;
+  public Map<String, Long> getRideRequestTimestamp() {
+    return this.rideRequestTimestamp;
   }
 
   public static void main(String[] args) throws IOException {
