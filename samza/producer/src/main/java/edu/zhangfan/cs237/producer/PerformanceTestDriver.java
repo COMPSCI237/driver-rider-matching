@@ -25,7 +25,7 @@ public class PerformanceTestDriver {
     PrintWriter latencyWriter = new PrintWriter(String.format("latency-%d.csv", testTimestamp));
     latencyWriter.println("riderID, request, matched");
     PrintWriter throughputWriter = new PrintWriter(String.format("throughput-%d.csv", testTimestamp));
-    throughputWriter.println("elapsed, matched");
+    throughputWriter.println("timestamp, matched");
 
     producer.initiate();
     System.out.printf("Before producer activated: %d\n", System.currentTimeMillis());
@@ -44,7 +44,7 @@ public class PerformanceTestDriver {
       }
       consumedCounter += records.count();
       System.out.printf("Matched %d\n", consumedCounter);
-      throughputWriter.printf("%d, %d\n", System.currentTimeMillis() - activatedTimeStamp, consumedCounter);
+      throughputWriter.printf("%d, %d\n", System.currentTimeMillis(), consumedCounter);
     }
     long consumedTimeStamp = System.currentTimeMillis();
     System.out.printf("After consumer consumed all messages: %d\n", consumedTimeStamp);
