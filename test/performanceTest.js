@@ -4,13 +4,13 @@ const User = require('../models/user.js');
 const util = require('util');
 const math = require('mathjs');
 
-var totalUsers = 0;
+var totalUsers = 1000;
 var messageCount = 0;
 var timeStamps = [];
+var latencies = [];
 
 exports.generateUser = function(number, type) {
-  totalUsers += (number / 2);
-  for (let i = 0; i < number; i++) {
+  for (let i = totalUsers; i < number + totalUsers; i++) {
     var user = new User();
     user.email = type + i + "@gmail.com";
     user.password = "123";
@@ -47,6 +47,7 @@ function generateMessage(ratio) {
   message.longitude = randomNum;
   message.latitude = 1 - randomNum;
   message.district = Math.round(randomNum / 0.25);
+  message.createTime = new Date().getTime();
   if (randomNum < ratio) {
     message.type = "driver";
     message.email = "driver" + Math.round(randomNum * totalUsers) + "@gmail.com";
@@ -68,10 +69,15 @@ function updateDriverLocation(message) {
         return next(err);
       } else {
         //util.log("message" + message.count + ": driver location updated!");
-        timeStamps.push(new Date().getTime());
+        var finishTime = new Date().getTime();
+        // timeStamps.push(finishTime);
+        latencies.push(finishTime - message.createTime);
         if (message.count === messageCount) {
-          for (let i = 0; i < timeStamps.length; i++) {
-            console.log(timeStamps[i]);
+          // for (let i = 0; i < timeStamps.length; i++) {
+          //   console.log(timeStamps[i]);
+          // }
+          for (let i = 0; i < latencies.length; i++) {
+            console.log(latencies[i]);
           }
         }
       }
@@ -104,10 +110,15 @@ function findClosestDriver(message, drivers) {
     }
   });
   //util.log("message" + message.count + ": rider request matched!");
-  timeStamps.push(new Date().getTime());
+  var finishTime = new Date().getTime();
+  // timeStamps.push(finishTime);
+  latencies.push(finishTime - message.createTime);
   if (message.count === messageCount) {
-    for (let i = 0; i < timeStamps.length; i++) {
-      console.log(timeStamps[i]);
+    // for (let i = 0; i < timeStamps.length; i++) {
+    //   console.log(timeStamps[i]);
+    // }
+    for (let i = 0; i < latencies.length; i++) {
+      console.log(latencies[i]);
     }
   }
 };

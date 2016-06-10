@@ -24,8 +24,9 @@ var kafka = require('kafka-node');
 var HighLevelProducer = kafka.HighLevelProducer;
 var Client = kafka.Client;
 var client1 = new Client();
-var topic = "topic1"
-var count = 2, rets = 0;
+var topicRider = "events"
+var topicDriver = "topic2"
+
 var producer = new HighLevelProducer(client1);
 
 const server = require("../server.js");
@@ -42,10 +43,10 @@ producer.on('ready', function () {
           messageObj.riderId = req.user._id;
           messageObj.latitude = req.body.latitude;
           messageObj.longitude = req.body.longitude;
-          messageObj.type = "DRIVER_LOCATION";
+          messageObj.type = "RIDE_REQUEST";
           var message = JSON.stringify(messageObj);
           producer.send([
-            {topic: topic, messages: [message] }
+            {topic: topicRider, messages: [message] }
           ], function (err, data) {
               if (err) util.log(err);
               else util.log('User %s message sent on Producer side', req.user._id);
@@ -70,24 +71,32 @@ producer.on('ready', function () {
       ]);
     });
 
+
     router.post('/drive', passportConfig.isAuthenticated, function(req, res, next) {
-      User.findById(req.user._id, function(err, driver) {
-        if (err) return next(err);
-        driver.location.longitude = req.body.longitude;
-        driver.location.latitude = req.body.latitude;
-        driver.district = req.body.district;
-        driver.save(function(err) {
-          if (err) return next(err);
-        });
-        util.log("Driver " + driver.profile.name + " sent in location update");
-        util.log("    " + req.body.longitude);
-        util.log("    " + req.body.latitude);
-        util.log("    " + req.body.district);
+
+      var messageObj = {};
+      messageObj.blockId = req.body.district;
+      messageObj.driverId = req.user._id;
+      messageObj.latitude = req.body.latitude;
+      messageObj.longitude = req.body.longitude;
+      messageObj.type = "DRIVER_LOCATION";
+
+      // console.log("### message: ");
+      // console.log(messageObj);
+      var message = JSON.stringify(messageObj);
+      producer.send([
+        {topic: 'topicDriver', messages: [message] }
+      ], function (err, data) {
+        if (err) console.log(err);
+        else console.log('user %s message sent', req.user._id);
       });
-    });
+
+
+
 });
-/*
+*/
 /******************************************************************************/
+
 
 
 router.post('/ride', function(req, res, next) {
@@ -152,6 +161,7 @@ router.post('/drive', passportConfig.isAuthenticated, function(req, res, next) {
     util.log("    " + req.body.district);
   });
 });
+
 
 
 module.exports = router;

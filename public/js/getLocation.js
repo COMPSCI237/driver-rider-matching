@@ -245,7 +245,7 @@ function initMap() {
     mapTypeId:google.maps.MapTypeId.ROADMAP
   });
 }
-google.maps.event.addDomListener(window, 'load', initialize);
+// google.maps.event.addDomListener(window, 'load', initialize);
 
 
 function createMarker(position, label, type) {

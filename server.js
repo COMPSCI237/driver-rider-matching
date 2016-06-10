@@ -12,11 +12,13 @@ const flash = require('express-flash');
 const MongoStore = require('connect-mongo/es5')(session);
 const passport = require('passport');
 const util = require('util');
+const http = require("http");
 const https = require('https');
 const fs = require('fs');
 
 var config = require('./config');
-var port = process.env.PORT || 443;
+var httpPort = process.env.PORT || 80;
+var httpsPort = 443;
 var User = require('./models/user.js');
 var app = express();
 
@@ -82,7 +84,7 @@ app.use(matchRoutes);
 var kafka = require('kafka-node');
 var HighLevelConsumer = kafka.HighLevelConsumer;
 var Client = kafka.Client;
-var topic = "topic1";
+var topic = "match-stream";
 var client = new Client('localhost:2181');
 var topics = [ { topic: topic }];
 var options = { autoCommit: true, fetchMaxWaitMs: 1000, fetchMaxBytes: 1024*1024 };
@@ -116,11 +118,11 @@ exports.queryMatching = (riderId) => {
 
 
 const performanceTest = require("./test/performanceTest");
-//performanceTest.generateUser(20, "driver");
-//performanceTest.generateUser(20, "rider");
+//performanceTest.generateUser(100, "driver");
+//performanceTest.generateUser(100, "rider");
 //performanceTest.initDriverLocation();
 
-//performanceTest.testBatchPerf(100, 0.8);
+//performanceTest.testBatchPerf(30000, 0);
 
 
 const options = {
@@ -129,7 +131,12 @@ const options = {
   passphrase: 'asdf1234'
 };
 
-https.createServer(options, app).listen(port, function(err) {
+http.createServer(app).listen(httpPort, function(err) {
   if (err) throw err;
-  console.log("Server is Running on port " + port);
+  console.log("Server is Running on port " + httpPort);
+});
+
+https.createServer(options, app).listen(httpsPort, function(err) {
+  if (err) throw err;
+  console.log("Server is Running on port " + httpsPort);
 });

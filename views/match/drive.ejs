@@ -2,7 +2,7 @@
 
 <div class="container">
   <% if (user.type === 'driver') { %>
-    <h2>This page will periodically request driver's location</h2>
+    <h2>Start your driving</h2>
     <div class="row">
       <div class="col-md-3">
         <div class="form-group">
@@ -34,8 +34,6 @@
 </div> <!-- /container -->
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/spin.js/2.3.2/spin.min.js"></script>
-<!-- <script src="http://maps.googleapis.com/maps/api/js"></script> -->
-<script async defer
-    src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap">
-</script>
 <script src="assets/js/getLocation.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDft3gHzDbRFlLm2oMfkOB9MmaYj0aNzjU&callback=initMap" async defer>
+</script>
