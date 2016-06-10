@@ -5,6 +5,7 @@ import edu.zhangfan.cs237.common.MatchEvent;
 import edu.zhangfan.cs237.common.StreamName;
 import org.apache.kafka.clients.consumer.*;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
+import org.apache.kafka.common.TopicPartition;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -17,6 +18,9 @@ public class PerformanceTestDriver {
 
   public static void main(String[] args) throws IOException {
     Consumer<String, String> consumer = createConsumer();
+    for (TopicPartition topicPartition : consumer.assignment()) {
+      System.out.printf("Partition %d\n", topicPartition.partition());
+    }
     int consumedCounter = 0;
     long messageNum = 10000;
 //    ITestProducer producer = new TestMatchEventTestProducer(consumedExpect);
